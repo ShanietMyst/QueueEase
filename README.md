@@ -36,6 +36,12 @@ VITE_API_URL=http://localhost/queueease/backend/api.php
 
 Restart Vite after changing environment variables.
 
+## Publish the frontend on GitHub Pages
+
+The workflow in `.github/workflows/deploy-pages.yml` builds the Vite app and deploys it to `https://shanietmyst.github.io/QueueEase/` whenever changes are pushed to `main`. In the repository's **Settings → Pages**, set **Build and deployment → Source** to **GitHub Actions**. The first deployment may take a few minutes; check the **Actions** tab for its status.
+
+GitHub Pages hosts only static frontend files; it cannot run this project's PHP API or MySQL database. The live page can display the app, but login, registration, appointments, and other database-backed features need the PHP backend hosted separately on a public HTTPS server. The current default API address points to `localhost` and is intended for local development; do not put database credentials in frontend environment variables.
+
 ## Administrator access
 
 The first administrator has been created in the existing `users` table with `role='admin'` and a PHP `password_hash()`. Public registration creates user accounts only. Sign in through **Log in** with the administrator credentials provided separately. Admins open **Admin operations**; ordinary users open the User Dashboard.
