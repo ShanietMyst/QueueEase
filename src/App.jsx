@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import './App.css'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost/queueease/backend/api.php'
+const LOCAL_API_URL = 'http://localhost/queueease/backend/api.php'
+const API_URL = import.meta.env.VITE_API_URL?.trim() || (import.meta.env.DEV ? LOCAL_API_URL : '')
+const API_CONFIGURATION_ERROR = 'The online QueueEase API is not configured. Host the PHP backend at a public HTTPS address and set the VITE_API_URL GitHub Actions variable.'
 
 const icons = {
   calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 11h18" /></>,
@@ -33,6 +35,7 @@ function localDateString(date = new Date()) {
 }
 
 async function request(action, { method = 'GET', body, params = {} } = {}) {
+  if (!API_URL) throw new Error(API_CONFIGURATION_ERROR)
   const query = new URLSearchParams({ action, ...params })
   const response = await fetch(`${API_URL}?${query}`, {
     method,
@@ -350,7 +353,7 @@ function App() {
   }
 
   if (!authReady) return <div className="app-content"><div className="empty-state"><span className="loader" />Checking your session…</div></div>
-  if (!user) return <><Landing onAuth={(mode) => { setAuthError(''); setAuthMode(mode) }} onBook={() => { setAuthError(''); setAuthMode('register') }} onMonitor={() => setPage('queue')} />{page === 'queue' && <div className="public-queue-modal"><QueueMonitor queue={queue} userQueue={null} loading={queueLoading} onNavigate={() => setPage('dashboard')} error={pageError} /><button className="modal-close" onClick={() => setPage('dashboard')} aria-label="Close"><Icon name="close" /></button></div>}{authMode && <AuthDialog mode={authMode} onClose={() => setAuthMode('')} onMode={(mode) => { setAuthError(''); setAuthMode(mode) }} onSubmit={submitAuth} busy={busy} error={authError} />}{toast && <div className="toast"><Icon name="check" size={17} />{toast}</div>}</>
+  if (!user) return <><Landing onAuth={(mode) => { setAuthError(''); setAuthMode(mode) }} onBook={() => { setAuthError(''); setAuthMode('register') }} onMonitor={() => setPage('queue')} />{!API_URL && <div className="backend-notice" role="status">{API_CONFIGURATION_ERROR}</div>}{page === 'queue' && <div className="public-queue-modal"><QueueMonitor queue={queue} userQueue={null} loading={queueLoading} onNavigate={() => setPage('dashboard')} error={pageError} /><button className="modal-close" onClick={() => setPage('dashboard')} aria-label="Close"><Icon name="close" /></button></div>}{authMode && <AuthDialog mode={authMode} onClose={() => setAuthMode('')} onMode={(mode) => { setAuthError(''); setAuthMode(mode) }} onSubmit={submitAuth} busy={busy} error={authError} />}{toast && <div className="toast"><Icon name="check" size={17} />{toast}</div>}</>
   return <><DashboardShell user={user} page={page} setPage={setPage} onLogout={logout}>{page === 'dashboard' && user.role === 'user' && <Dashboard user={user} stats={stats} appointments={appointments} onBook={() => requireUser('book')} onNavigate={setPage} loading={loading} error={pageError} />}{page === 'book' && user.role === 'user' && <Booking onSubmit={submitBooking} busy={busy} error={bookError} success={bookSuccess} onNavigate={setPage} />}{page === 'appointments' && user.role === 'user' && <Appointments appointments={appointments} onCancel={cancelAppointment} busyId={busyId} onNavigate={(target) => target === 'book' ? requireUser(target) : setPage(target)} loading={loading} error={pageError} />}{page === 'queue' && <QueueMonitor queue={queue} userQueue={userQueue} loading={queueLoading} onNavigate={setPage} error={pageError} />}{page === 'dashboard' && user.role === 'admin' && <AdminPanel data={adminData} onAction={adminAction} onNavigate={setPage} busy={busy || loading} error={pageError} showBack={false} />}{page === 'admin' && user.role === 'admin' && <AdminPanel data={adminData} onAction={adminAction} onNavigate={setPage} busy={busy || loading} error={pageError} />}{page === 'settings' && <AccountSettings key={user.id} user={user} onProfile={saveProfile} onPassword={changePassword} busy={busy} error={pageError} success={toast === 'Profile updated.' ? 'profile' : toast === 'Password changed successfully.' ? 'password' : ''} />}</DashboardShell>{toast && <div className="toast"><Icon name="check" size={17} />{toast}</div>}</>
 }
 

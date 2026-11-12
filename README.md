@@ -24,7 +24,7 @@ For a brand-new database only, import [`backend/schema.sql`](backend/schema.sql)
    npm run dev
    ```
 
-3. Open the Vite URL shown in the terminal (normally `http://localhost:5173`). The frontend API defaults to `http://localhost/queueease/backend/api.php`.
+3. Open the Vite URL shown in the terminal (normally `http://localhost:5173`). During local development, the frontend API defaults to `http://localhost/queueease/backend/api.php`.
 4. The workspace backend should be copied to `C:\xampp\htdocs\queueease\backend` whenever backend files change. Keep both folders; use the workspace version as the source of truth. The local XAMPP MySQL defaults are host `127.0.0.1`, database `queueease`, user `root`, and an empty password. Configure other credentials in Apache's environment, never in the browser or Vite variables.
 5. The API allows `http://localhost:5173` and `http://127.0.0.1:5173` by default. If Vite uses another origin, set `QUEUEEASE_FRONTEND_ORIGIN` for Apache and restart Apache.
 
@@ -40,7 +40,17 @@ Restart Vite after changing environment variables.
 
 The workflow in `.github/workflows/deploy-pages.yml` builds the Vite app and deploys it to `https://shanietmyst.github.io/QueueEase/` whenever changes are pushed to `main`. In the repository's **Settings → Pages**, set **Build and deployment → Source** to **GitHub Actions**. The first deployment may take a few minutes; check the **Actions** tab for its status.
 
-GitHub Pages hosts only static frontend files; it cannot run this project's PHP API or MySQL database. The live page can display the app, but login, registration, appointments, and other database-backed features need the PHP backend hosted separately on a public HTTPS server. The current default API address points to `localhost` and is intended for local development; do not put database credentials in frontend environment variables.
+GitHub Pages hosts only static frontend files; it cannot run this project's PHP API or MySQL database. `localhost` in a visitor's browser points to that visitor's own computer, not your XAMPP server, so the production build never falls back to localhost.
+
+To connect the published frontend:
+
+1. Deploy the PHP backend and MySQL database to a public HTTPS hosting service. The API URL must end in `/backend/api.php`. Do not expose a local XAMPP database or put database credentials in frontend settings.
+2. In GitHub, open **Settings → Secrets and variables → Actions → Variables → New repository variable**. Add `VITE_API_URL` with the public HTTPS API URL, for example `https://api.example.com/backend/api.php`.
+3. Configure the PHP server environment variable `QUEUEEASE_FRONTEND_ORIGIN` to the allowed frontend origins (no trailing slash), for example `https://shanietmyst.github.io,http://localhost:5173,http://127.0.0.1:5173`. Restart/redeploy the PHP service after changing it.
+4. Ensure the PHP host supports credentialed CORS and HTTPS session cookies. For reliable session-based login, host the frontend and API on the same site/custom domain when possible; browsers may block cookies for third-party cross-site requests.
+5. In **Settings → Pages**, choose **GitHub Actions** as the source, then push a commit or run **Deploy QueueEase to GitHub Pages** from **Actions**.
+
+Until a public API URL is configured, the site displays a notice instead of sending requests to visitors' localhost addresses. CORS settings alone cannot make your computer's XAMPP server publicly available.
 
 ## Administrator access
 

@@ -3,11 +3,13 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/config.php';
 
-$configuredOrigin = getenv('QUEUEEASE_FRONTEND_ORIGIN') ?: 'http://localhost:5173';
-$allowedOrigins = array_values(array_unique(array_filter([
-    $configuredOrigin,
-    'http://127.0.0.1:5173',
-])));
+$configuredOrigins = getenv('QUEUEEASE_FRONTEND_ORIGIN');
+$allowedOrigins = $configuredOrigins === false || trim($configuredOrigins) === ''
+    ? ['http://localhost:5173', 'http://127.0.0.1:5173']
+    : array_values(array_unique(array_filter(
+        array_map('trim', explode(',', $configuredOrigins)),
+        static fn (string $configuredOrigin): bool => $configuredOrigin !== ''
+    )));
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 if ($origin !== '' && in_array($origin, $allowedOrigins, true)) {
     header("Access-Control-Allow-Origin: $origin");
@@ -27,7 +29,7 @@ session_set_cookie_params([
     'path' => '/',
     'secure' => $secureCookie,
     'httponly' => true,
-    'samesite' => 'Lax',
+    'samesite' => $secureCookie ? 'None' : 'Lax',
 ]);
 session_start();
 

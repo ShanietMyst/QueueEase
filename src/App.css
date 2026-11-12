@@ -19,6 +19,7 @@
 
 /* Public landing page */
 .landing { min-height: 100vh; background: #fff; overflow: hidden; }
+.backend-notice { max-width: 1096px; margin: 14px auto 0; padding: 12px 16px; border: 1px solid #f1d59d; border-radius: 9px; background: #fff9eb; color: #74591f; font-size: 12px; line-height: 1.6; }
 .landing-header { max-width: 1160px; height: 79px; margin: auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0f2f6; }
 .landing-nav { display: flex; align-items: center; gap: 37px; margin-left: 60px; }
 .landing-nav a { color: #67748a; font-size: 12px; font-weight: 600; transition: color .18s; }
@@ -342,6 +343,7 @@ td small { margin-top: 4px; color: #99a4b3; font-size: 9px; }
 }
 @media (max-width: 760px) {
   body { min-width: 360px; }
+  .backend-notice { margin: 12px 19px 0; }
   .landing-header { height: 67px; padding: 0 19px; }
   .landing-header .brand { font-size: 18px; }
   .landing-nav { display: none; }
