@@ -3,7 +3,7 @@ import './App.css'
 
 const LOCAL_API_URL = 'http://localhost/queueease/backend/api.php'
 const API_URL = import.meta.env.VITE_API_URL?.trim() || (import.meta.env.DEV ? LOCAL_API_URL : '')
-const API_CONFIGURATION_ERROR = 'The online QueueEase API is not configured. Host the PHP backend at a public HTTPS address and set the VITE_API_URL GitHub Actions variable.'
+const API_UNAVAILABLE_MESSAGE = 'Sign-in and account creation will be available in a future update.'
 
 const icons = {
   calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 11h18" /></>,
@@ -35,7 +35,7 @@ function localDateString(date = new Date()) {
 }
 
 async function request(action, { method = 'GET', body, params = {} } = {}) {
-  if (!API_URL) throw new Error(API_CONFIGURATION_ERROR)
+  if (!API_URL) throw new Error(API_UNAVAILABLE_MESSAGE)
   const query = new URLSearchParams({ action, ...params })
   const response = await fetch(`${API_URL}?${query}`, {
     method,
@@ -92,7 +92,7 @@ function Landing({ onAuth, onBook, onMonitor }) {
   </div>
 }
 
-function AuthDialog({ mode, onClose, onSubmit, busy, error, onMode }) {
+function AuthDialog({ mode, onClose, onSubmit, busy, error, onMode, apiAvailable }) {
   const [values, setValues] = useState({ name: '', email: '', password: '', confirm: '' })
   const register = mode === 'register'
   function submit(event) {
@@ -104,16 +104,18 @@ function AuthDialog({ mode, onClose, onSubmit, busy, error, onMode }) {
     <section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
       <button className="modal-close" onClick={onClose} aria-label="Close"><Icon name="close" /></button>
       <Brand /><span className="mini-label auth-kicker">{register ? 'CREATE YOUR ACCOUNT' : 'WELCOME BACK'}</span><h2 id="auth-title">{register ? 'Your next visit, made easier.' : 'Good to see you again.'}</h2><p className="auth-subtitle">{register ? 'Sign up to book appointments and follow your queue.' : 'Log in to manage your appointments and queue.'}</p>
-      <form className="form-stack" onSubmit={submit}>
-        {register && <label>Full name<input required minLength="2" autoComplete="name" value={values.name} onChange={(e) => setValues({ ...values, name: e.target.value })} placeholder="e.g. Jamie Lee" /></label>}
-        <label>Email address<input required type="email" autoComplete="email" value={values.email} onChange={(e) => setValues({ ...values, email: e.target.value })} placeholder="you@example.com" /></label>
-        <label>Password<input required minLength="8" maxLength="72" type="password" autoComplete={register ? 'new-password' : 'current-password'} value={values.password} onChange={(e) => setValues({ ...values, password: e.target.value })} placeholder="At least 8 characters" /></label>
-        {register && <label>Confirm password<input required minLength="8" maxLength="72" type="password" autoComplete="new-password" value={values.confirm} onChange={(e) => setValues({ ...values, confirm: e.target.value })} placeholder="Enter your password again" /></label>}
-        {register && values.confirm && values.password !== values.confirm && <span className="field-error">Passwords don’t match.</span>}
-        {error && <div className="alert alert-error">{error}</div>}
-        <button className="button button-primary button-full" disabled={busy || (register && values.password !== values.confirm)}>{busy ? 'Please wait…' : register ? 'Create account' : 'Log in'} <Icon name="arrow" size={17} /></button>
-      </form>
-      <p className="auth-switch">{register ? 'Already have an account?' : 'New to QueueEase?'} <button className="text-button" onClick={() => onMode(register ? 'login' : 'register')}>{register ? 'Log in' : 'Create an account'}</button></p>
+      {apiAvailable ? <>
+        <form className="form-stack" onSubmit={submit}>
+          {register && <label>Full name<input required minLength="2" autoComplete="name" value={values.name} onChange={(e) => setValues({ ...values, name: e.target.value })} placeholder="e.g. Jamie Lee" /></label>}
+          <label>Email address<input required type="email" autoComplete="email" value={values.email} onChange={(e) => setValues({ ...values, email: e.target.value })} placeholder="you@example.com" /></label>
+          <label>Password<input required minLength="8" maxLength="72" type="password" autoComplete={register ? 'new-password' : 'current-password'} value={values.password} onChange={(e) => setValues({ ...values, password: e.target.value })} placeholder="At least 8 characters" /></label>
+          {register && <label>Confirm password<input required minLength="8" maxLength="72" type="password" autoComplete="new-password" value={values.confirm} onChange={(e) => setValues({ ...values, confirm: e.target.value })} placeholder="Enter your password again" /></label>}
+          {register && values.confirm && values.password !== values.confirm && <span className="field-error">Passwords don’t match.</span>}
+          {error && <div className="alert alert-error">{error}</div>}
+          <button className="button button-primary button-full" disabled={busy || (register && values.password !== values.confirm)}>{busy ? 'Please wait…' : register ? 'Create account' : 'Log in'} <Icon name="arrow" size={17} /></button>
+        </form>
+        <p className="auth-switch">{register ? 'Already have an account?' : 'New to QueueEase?'} <button className="text-button" onClick={() => onMode(register ? 'login' : 'register')}>{register ? 'Log in' : 'Create an account'}</button></p>
+      </> : <p className="preview-notice" role="status">{API_UNAVAILABLE_MESSAGE}</p>}
       <p className="auth-privacy"><Icon name="shield" size={15} /> Your personal information stays private.</p>
     </section>
   </div>
@@ -353,7 +355,7 @@ function App() {
   }
 
   if (!authReady) return <div className="app-content"><div className="empty-state"><span className="loader" />Checking your session…</div></div>
-  if (!user) return <><Landing onAuth={(mode) => { setAuthError(''); setAuthMode(mode) }} onBook={() => { setAuthError(''); setAuthMode('register') }} onMonitor={() => setPage('queue')} />{!API_URL && <div className="backend-notice" role="status">{API_CONFIGURATION_ERROR}</div>}{page === 'queue' && <div className="public-queue-modal"><QueueMonitor queue={queue} userQueue={null} loading={queueLoading} onNavigate={() => setPage('dashboard')} error={pageError} /><button className="modal-close" onClick={() => setPage('dashboard')} aria-label="Close"><Icon name="close" /></button></div>}{authMode && <AuthDialog mode={authMode} onClose={() => setAuthMode('')} onMode={(mode) => { setAuthError(''); setAuthMode(mode) }} onSubmit={submitAuth} busy={busy} error={authError} />}{toast && <div className="toast"><Icon name="check" size={17} />{toast}</div>}</>
+  if (!user) return <><Landing onAuth={(mode) => { setAuthError(''); setAuthMode(mode) }} onBook={() => { setAuthError(''); setAuthMode('register') }} onMonitor={() => setPage('queue')} />{page === 'queue' && <div className="public-queue-modal"><QueueMonitor queue={queue} userQueue={null} loading={queueLoading} onNavigate={() => setPage('dashboard')} error={pageError} /><button className="modal-close" onClick={() => setPage('dashboard')} aria-label="Close"><Icon name="close" /></button></div>}{authMode && <AuthDialog mode={authMode} onClose={() => setAuthMode('')} onMode={(mode) => { setAuthError(''); setAuthMode(mode) }} onSubmit={submitAuth} busy={busy} error={authError} apiAvailable={Boolean(API_URL)} />}{toast && <div className="toast"><Icon name="check" size={17} />{toast}</div>}</>
   return <><DashboardShell user={user} page={page} setPage={setPage} onLogout={logout}>{page === 'dashboard' && user.role === 'user' && <Dashboard user={user} stats={stats} appointments={appointments} onBook={() => requireUser('book')} onNavigate={setPage} loading={loading} error={pageError} />}{page === 'book' && user.role === 'user' && <Booking onSubmit={submitBooking} busy={busy} error={bookError} success={bookSuccess} onNavigate={setPage} />}{page === 'appointments' && user.role === 'user' && <Appointments appointments={appointments} onCancel={cancelAppointment} busyId={busyId} onNavigate={(target) => target === 'book' ? requireUser(target) : setPage(target)} loading={loading} error={pageError} />}{page === 'queue' && <QueueMonitor queue={queue} userQueue={userQueue} loading={queueLoading} onNavigate={setPage} error={pageError} />}{page === 'dashboard' && user.role === 'admin' && <AdminPanel data={adminData} onAction={adminAction} onNavigate={setPage} busy={busy || loading} error={pageError} showBack={false} />}{page === 'admin' && user.role === 'admin' && <AdminPanel data={adminData} onAction={adminAction} onNavigate={setPage} busy={busy || loading} error={pageError} />}{page === 'settings' && <AccountSettings key={user.id} user={user} onProfile={saveProfile} onPassword={changePassword} busy={busy} error={pageError} success={toast === 'Profile updated.' ? 'profile' : toast === 'Password changed successfully.' ? 'password' : ''} />}</DashboardShell>{toast && <div className="toast"><Icon name="check" size={17} />{toast}</div>}</>
 }
 

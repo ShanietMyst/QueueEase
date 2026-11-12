@@ -40,7 +40,7 @@ Restart Vite after changing environment variables.
 
 The workflow in `.github/workflows/deploy-pages.yml` builds the Vite app and deploys it to `https://shanietmyst.github.io/QueueEase/` whenever changes are pushed to `main`. In the repository's **Settings → Pages**, set **Build and deployment → Source** to **GitHub Actions**. The first deployment may take a few minutes; check the **Actions** tab for its status.
 
-GitHub Pages hosts only static frontend files; it cannot run this project's PHP API or MySQL database. `localhost` in a visitor's browser points to that visitor's own computer, not your XAMPP server, so the production build never falls back to localhost.
+GitHub Pages hosts only static frontend files; it cannot run this project's PHP API or MySQL database. `localhost` in a visitor's browser points to that visitor's own computer, not your XAMPP server, so the production build never falls back to localhost. Until an online API is configured, the deployed site is a UI progress preview: sign-in and account creation show a friendly "available in a future update" notice, and no demo accounts or fake records are used. Local development continues to use the XAMPP API.
 
 To connect the published frontend:
 
