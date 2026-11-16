@@ -1,82 +1,80 @@
 # QueueEase
 
-QueueEase is a React/Vite appointment and queue-management frontend backed by a PHP JSON API and MySQL. The workspace backend is the source of truth; XAMPP serves the copy at `C:\xampp\htdocs\queueease\backend`.
+QueueEase is a hospital appointment and queue-management application. Patients can request appointments, follow approval status, and monitor their queue. Clinic administrators manage appointments, schedules, queue operations, and user access.
+
+## Architecture
+
+- **Frontend:** React, Vite, and Tailwind CSS.
+- **Backend:** Supabase Auth and PostgreSQL.
+- **Database security:** Row Level Security (RLS) protects table access. Database RPC functions check ownership and administrator permissions for operations.
+- **Hosting:** GitHub Pages serves the static frontend. GitHub Actions builds and deploys it from `main`.
+
+The PHP/MySQL/XAMPP files in `backend/` are retained as legacy/reference material. They are not the active backend for the current application.
 
 ## Requirements
 
-- Node.js 20.19+ or 22.12+
-- XAMPP with PHP 8+, MySQL/MariaDB, PDO MySQL, JSON, and mbstring enabled
-- A modern browser
+- Node.js 22 (the Pages workflow uses Node.js 22)
+- npm
+- A Supabase project for application authentication and database access
 
-## Database setup
+## Local development
 
-The local `queueease` database's legacy schema has already been migrated. Do not import the migration there again. For another database still using the legacy schema, export a backup in phpMyAdmin first, then import [`backend/migrate_legacy.sql`](backend/migrate_legacy.sql) once. This migration adds and backfills columns without dropping tables or records.
-
-For a brand-new database only, import [`backend/schema.sql`](backend/schema.sql) instead. Do not import both scripts into the same database. The legacy migration preserves `system_settings` and adds supporting admin/audit tables. Legacy plaintext passwords are not accepted as login credentials.
-
-## Start QueueEase
-
-1. In the XAMPP Control Panel, start **Apache** and **MySQL**.
-2. From `C:\Users\ASUS\queueease`, run:
-
-   ```powershell
-   npm install
-   npm run dev
-   ```
-
-3. Open the Vite URL shown in the terminal (normally `http://localhost:5173`). During local development, the frontend API defaults to `http://localhost/queueease/backend/api.php`.
-4. The workspace backend should be copied to `C:\xampp\htdocs\queueease\backend` whenever backend files change. Keep both folders; use the workspace version as the source of truth. The local XAMPP MySQL defaults are host `127.0.0.1`, database `queueease`, user `root`, and an empty password. Configure other credentials in Apache's environment, never in the browser or Vite variables.
-5. The API allows `http://localhost:5173` and `http://127.0.0.1:5173` by default. If Vite uses another origin, set `QUEUEEASE_FRONTEND_ORIGIN` for Apache and restart Apache.
-
-To override the frontend API URL, create `.env.local` in the project root:
+Create a local `.env.local` in the repository root. The URL and publishable key below are placeholders; use the values for your own Supabase project.
 
 ```env
-VITE_API_URL=http://localhost/queueease/backend/api.php
+VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY
 ```
 
-Restart Vite after changing environment variables.
+Then install dependencies and start Vite:
 
-## Publish the frontend on GitHub Pages
+```sh
+npm ci
+npm run dev
+```
 
-The workflow in `.github/workflows/deploy-pages.yml` builds the Vite app and deploys it to `https://shanietmyst.github.io/QueueEase/` whenever changes are pushed to `main`. In the repository's **Settings → Pages**, set **Build and deployment → Source** to **GitHub Actions**. The first deployment may take a few minutes; check the **Actions** tab for its status.
+Open the local URL printed by Vite, normally `http://localhost:5173/`. Configure that origin in the Supabase Auth redirect URL allowlist. The app uses the Supabase project named by the environment variables; without both variables, online sign-in is unavailable.
 
-GitHub Pages hosts only static frontend files; it cannot run this project's PHP API or MySQL database. `localhost` in a visitor's browser points to that visitor's own computer, not your XAMPP server, so the production build never falls back to localhost. Until an online API is configured, the deployed site is a UI progress preview: sign-in and account creation show a friendly "available in a future update" notice, and no demo accounts or fake records are used. Local development continues to use the XAMPP API.
+Useful project commands:
 
-To connect the published frontend:
-
-1. Deploy the PHP backend and MySQL database to a public HTTPS hosting service. The API URL must end in `/backend/api.php`. Do not expose a local XAMPP database or put database credentials in frontend settings.
-2. In GitHub, open **Settings → Secrets and variables → Actions → Variables → New repository variable**. Add `VITE_API_URL` with the public HTTPS API URL, for example `https://api.example.com/backend/api.php`.
-3. Configure the PHP server environment variable `QUEUEEASE_FRONTEND_ORIGIN` to the allowed frontend origins (no trailing slash), for example `https://shanietmyst.github.io,http://localhost:5173,http://127.0.0.1:5173`. Restart/redeploy the PHP service after changing it.
-4. Ensure the PHP host supports credentialed CORS and HTTPS session cookies. For reliable session-based login, host the frontend and API on the same site/custom domain when possible; browsers may block cookies for third-party cross-site requests.
-5. In **Settings → Pages**, choose **GitHub Actions** as the source, then push a commit or run **Deploy QueueEase to GitHub Pages** from **Actions**.
-
-Until a public API URL is configured, the site displays a notice instead of sending requests to visitors' localhost addresses. CORS settings alone cannot make your computer's XAMPP server publicly available.
-
-## Administrator access
-
-The first administrator has been created in the existing `users` table with `role='admin'` and a PHP `password_hash()`. Public registration creates user accounts only. Sign in through **Log in** with the administrator credentials provided separately. Admins open **Admin operations**; ordinary users open the User Dashboard.
-
-The one-time CLI setup script was removed from both the workspace and XAMPP backend after setup. Removing the script does not delete the admin account. Do not copy a setup script back into `htdocs`. If another administrator is needed in the future, use a controlled private CLI/database procedure that hashes the password; do not enable public admin registration.
-
-## Features and checks
-
-- Registration, login, logout, and database-validated sessions
-- User appointment booking, history, cancellation, and live queue status
-- Admin appointment decisions, queue calling/status changes, schedules, user activation, and reports
-- Prepared PDO statements, password hashing, server-side role checks, and activity logging
-
-Run frontend checks from the workspace:
-
-```powershell
+```sh
 npm run lint
 npm run build
+npm run build -- --mode github-pages
 ```
 
-Check PHP syntax:
+The GitHub Pages build mode sets the repository base path to `/QueueEase/`.
 
-```powershell
-C:\xampp\php\php.exe -l C:\Users\ASUS\queueease\backend\api.php
-C:\xampp\php\php.exe -l C:\Users\ASUS\queueease\backend\config.php
-```
+## Supabase setup
 
-Check that the API is reachable at `http://localhost/queueease/backend/api.php?action=me`; a signed-out request returns `{"user":null}`. Use HTTPS and secure MySQL credentials outside local development.
+For Auth configuration, database migration order, first administrator provisioning, and security/known-issue details, see [Supabase operations](supabase/OPERATIONS.md). The [system documentation](docs/QUEUEEASE_SYSTEM_DOCUMENTATION.md) describes the application flows and database model.
+
+The production-equivalent database migration sequence is:
+
+1. `20261115163846_queueease_initial_schema_20261115154936`
+2. `20261115174955_queueease_phase_b_user_operations_20261116013759`
+3. `20261116011513_queueease_admin_operations_20261116085254`
+
+These migration files are recovered from the live Supabase migration history. Their historical comments include stale “not applied” or “draft” wording; the database history confirms these three entries were applied. The patient-terminology migration is not included because it has no applied history entry.
+
+## GitHub Pages deployment
+
+The workflow at `.github/workflows/deploy-pages.yml` builds the site in GitHub Pages mode and deploys the `dist/` output. In the repository settings:
+
+1. Set **Pages → Build and deployment → Source** to **GitHub Actions**.
+2. Under **Settings → Secrets and variables → Actions → Variables**, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
+3. Push the documentation/application change to `main`, or use the workflow’s manual dispatch.
+
+The workflow checks that both variables are set before building. They are bundled into the static frontend. Use only the Supabase publishable key here; never place a service-role key, database password, or other privileged credential in a Vite variable or browser code.
+
+The deployed site is served at [QueueEase on GitHub Pages](https://shanietmyst.github.io/QueueEase/). Configure the same URL as the Supabase Auth Site URL and allow the site’s redirect path.
+
+## Implemented features
+
+- Email/password account registration, email confirmation flow, sign-in, and sign-out through Supabase Auth.
+- Appointment booking, appointment history/status, cancellation where allowed, and profile/password changes.
+- Public queue monitoring and the signed-in user’s queue summary.
+- Administrator appointment decisions, schedule management, queue status/call/skip/advance operations, announcements, activity viewing, and application-level user activation.
+- In-app database notifications for appointment, queue, and announcement updates.
+
+See the system documentation for current limitations. In particular, the live profile-update function has a malformed phone-number regex, the patient schedules page has a role-condition mismatch, and system-settings changes are disabled by an empty allowlist.
