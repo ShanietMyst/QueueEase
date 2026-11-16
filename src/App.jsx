@@ -330,6 +330,7 @@ function ActivityRows({ activity = [] }) {
 
 function AdminPanel({ data, onAction, onNavigate, busy, error, section = 'dashboard' }) {
   const [announcement, setAnnouncement] = useState({ title: '', message: '' })
+  const [queueAction, setQueueAction] = useState('')
   const sectionName = section === 'admin' ? 'appointments' : section
   const pending = data.appointments.filter((item) => item.status === 'Pending')
   const pendingCount = Number(data.stats.pending_appointments ?? pending.length)
@@ -341,8 +342,62 @@ function AdminPanel({ data, onAction, onNavigate, busy, error, section = 'dashbo
   const availableCapacity = Number(data.capacity_totals?.available ?? Math.max(0, totalCapacity - bookedCapacity))
   const attentionCount = pendingCount + (data.attention?.low_capacity?.length || 0) + (data.attention?.full_schedules?.length || 0) + (data.attention?.unavailable_schedules?.length || 0) + (data.attention?.queue_issue ? 1 : 0)
   const titles = { dashboard: 'Overview', appointments: 'Appointments', queue: 'Queue management', schedules: 'Schedules', users: 'Users', reports: 'Reports', announcements: 'Announcements', activity: 'Recent activity', settings: 'Settings' }
+  const servingQueueRecord = (data.queue.records || []).find((record) => record.status === 'Serving')
+  const handleCurrentQueueAction = async (action) => {
+    if (!servingQueueRecord || busy || queueAction) return
+    const queueNumber = servingQueueRecord.queue_number
+    const verb = action === 'complete' ? 'complete' : 'skip'
+    if (!window.confirm(`Are you sure you want to ${verb} queue number ${queueNumber}?`)) return
+
+    setQueueAction(action)
+    try {
+      if (action === 'complete') {
+        await onAction('queue_status', { id: servingQueueRecord.queue_record_id, status: 'Completed' })
+      } else {
+        await onAction('skip', {})
+      }
+    } finally {
+      setQueueAction('')
+    }
+  }
   const renderAppointments = (rows) => rows.length ? <div className="table-scroll"><table><thead><tr><th>Patient</th><th>Appointment</th><th>Date and time</th><th>Status</th><th>Action</th></tr></thead><tbody>{rows.map((item) => <tr key={item.id}><td><strong>{item.full_name}</strong><small>{item.email} · {item.contact_number}</small></td><td>{item.purpose}</td><td>{item.appointment_date}<small>{item.time_slot}</small></td><td><Status value={item.status} /></td><td>{item.status === 'Pending' && <div className="row-actions"><button disabled={busy} className="approve-button" onClick={() => onAction('decision', { id: item.id, status: 'Confirmed' })}>Approve</button><button disabled={busy} className="cancel-button" onClick={() => onAction('decision', { id: item.id, status: 'Rejected' })}>Reject</button></div>}{item.queue_number && <span className="queue-small">{item.queue_number}</span>}</td></tr>)}</tbody></table></div> : <div className="empty-state"><strong>No appointments to review</strong><p>New appointment requests will appear here.</p></div>
-  const renderQueue = () => <div className="admin-queue"><div className="admin-queue-summary"><div><span className="mini-label">CURRENTLY SERVING</span><strong>{data.queue.currently_serving || '—'}</strong></div><div><span className="mini-label">NEXT IN LINE</span><strong>{data.queue.waiting?.[0]?.queue_number || '—'}</strong></div><div><span className="mini-label">WAITING</span><strong>{data.queue.waiting?.length || 0}</strong></div></div><div className="admin-queue-actions"><button className="button button-primary" disabled={busy || !data.queue.waiting?.length} onClick={() => onAction('next', {})}>Call next <Icon name="arrow" size={17} /></button>{data.queue.currently_serving && <button className="button button-outline button-small" disabled={busy} onClick={() => onAction('skip', {})}>Skip current</button>}</div>{data.queue.records?.length ? data.queue.records.map((item) => <div className="admin-queue-row" key={item.id}><span>{item.queue_number}</span><span>{item.full_name} · {item.purpose}</span><Status value={item.status} /><div className="row-actions">{item.status === 'Waiting' && <><button disabled={busy} className="approve-button" onClick={() => onAction('queue_status', { id: item.id, status: 'Serving' })}>Call</button><button disabled={busy} className="cancel-button" onClick={() => onAction('queue_status', { id: item.id, status: 'Cancelled' })}>Cancel</button></>}{item.status === 'Serving' && <><button disabled={busy} className="approve-button" onClick={() => onAction('queue_status', { id: item.id, status: 'Completed' })}>Complete</button><button disabled={busy} className="cancel-button" onClick={() => onAction('queue_status', { id: item.id, status: 'Skipped' })}>Skip</button></>}</div></div>) : <div className="empty-state"><strong>There are no queue records for today</strong><p>Confirmed appointments appear here when their service date arrives.</p></div>}</div>
+  const renderQueue = () => <div className="admin-queue">
+    <div className="admin-queue-summary">
+      <div><span className="mini-label">CURRENTLY SERVING</span><strong>{data.queue.currently_serving || '—'}</strong></div>
+      <div><span className="mini-label">NEXT IN LINE</span><strong>{data.queue.waiting?.[0]?.queue_number || '—'}</strong></div>
+      <div><span className="mini-label">WAITING</span><strong>{data.queue.waiting?.length || 0}</strong></div>
+    </div>
+    <div className="admin-queue-actions">
+      <button className="button button-primary" disabled={busy || !data.queue.waiting?.length} onClick={() => onAction('next', {})}>Call next <Icon name="arrow" size={17} /></button>
+      <button className="button button-outline button-small" disabled={busy || !servingQueueRecord || Boolean(queueAction)} onClick={() => handleCurrentQueueAction('complete')}>
+        {queueAction === 'complete' ? 'Completing…' : 'Complete Current'}
+      </button>
+      <button className="button button-outline button-small" disabled={busy || !servingQueueRecord || Boolean(queueAction)} onClick={() => handleCurrentQueueAction('skip')}>
+        {queueAction === 'skip' ? 'Skipping…' : 'Skip Current'}
+      </button>
+    </div>
+    {data.queue.records?.length ? data.queue.records.map((item) => <div className="admin-queue-row" key={item.queue_record_id}>
+      <span>{item.queue_number}</span><span>{item.full_name} · {item.purpose}</span><Status value={item.status} />
+      <div className="row-actions">
+        {item.status === 'Waiting' && <>
+          <button disabled={busy} className="approve-button" onClick={() => onAction('queue_status', { id: item.queue_record_id, status: 'Serving' })}>Call</button>
+          <button disabled={busy} className="cancel-button" onClick={() => onAction('queue_status', { id: item.queue_record_id, status: 'Cancelled' })}>Cancel</button>
+        </>}
+        {item.status === 'Serving' && <>
+          <button disabled={busy} className="approve-button" onClick={() => {
+            if (window.confirm(`Are you sure you want to complete queue number ${item.queue_number}?`)) {
+              onAction('queue_status', { id: item.queue_record_id, status: 'Completed' })
+            }
+          }}>Complete</button>
+          <button disabled={busy} className="cancel-button" onClick={() => {
+            if (window.confirm(`Are you sure you want to skip queue number ${item.queue_number}?`)) {
+              onAction('queue_status', { id: item.queue_record_id, status: 'Skipped' })
+            }
+          }}>Skip</button>
+        </>}
+      </div>
+    </div>) : <div className="empty-state"><strong>There are no queue records for today</strong><p>Confirmed appointments appear here when their service date arrives.</p></div>}
+  </div>
   const renderUsers = () => data.users?.length ? <div className="table-scroll"><table><thead><tr><th>User</th><th>Joined</th><th>Appointments</th><th>Account</th><th>Action</th></tr></thead><tbody>{data.users.map((item) => <tr key={item.id}><td><strong>{item.full_name}</strong><small>{item.email}</small></td><td>{new Date(item.created_at).toLocaleDateString()}</td><td>{item.appointment_count}</td><td><Status value={Number(item.is_active) ? 'Active' : 'Inactive'} /></td><td><button className={Number(item.is_active) ? 'cancel-button' : 'approve-button'} disabled={busy} onClick={() => onAction('user', { id: item.id, is_active: Number(item.is_active) ? 0 : 1 })}>{Number(item.is_active) ? 'Deactivate' : 'Reactivate'}</button></td></tr>)}</tbody></table></div> : <div className="empty-state"><strong>No user accounts yet</strong></div>
   return <div className="app-content"><div className="page-heading"><div><span className="mini-label">ADMINISTRATION</span><h1>{titles[sectionName] || 'Administration'}</h1><p>{sectionName === 'dashboard' ? 'Today’s appointments, queue, schedules, and attention items.' : `Manage QueueEase ${titles[sectionName]?.toLowerCase() || 'operations'}.`}</p></div>{sectionName !== 'dashboard' && <button className="button button-outline" onClick={() => onNavigate('dashboard')}>Back to overview</button>}</div>
     {error && <div className="alert alert-error page-alert">{error}</div>}
@@ -639,8 +694,9 @@ function App() {
       const queue = {
         ...(snapshotResult.data || { waiting: [] }),
         records: todayQueueRecords.map((record) => ({
-          ...record,
           ...(queueAppointmentById.get(record.appointment_id) || {}),
+          ...record,
+          queue_record_id: record.id,
         })).sort((left, right) => left.queue_number_int - right.queue_number_int),
       }
       const activityActorIds = [...new Set((activityRows.data || []).map((item) => item.actor_id).filter(Boolean))]
