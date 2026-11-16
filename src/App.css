@@ -128,6 +128,16 @@
 .breadcrumb { display: flex; align-items: center; gap: 10px; color: #9aa5b5; font-size: 10px; }
 .breadcrumb strong { color: #506078; font-weight: 600; }
 .topbar-right { display: flex; align-items: center; gap: 15px; }
+.notification-wrapper { position: relative; }
+.notification-wrapper .icon-button { position: relative; }
+.notification-badge { position: absolute; top: -5px; right: -4px; min-width: 16px; height: 16px; display: grid; place-items: center; border-radius: 999px; padding: 0 4px; background: #e94242; color: #fff; font-size: 8px; font-weight: 700; }
+.notification-panel { position: absolute; top: calc(100% + 12px); right: 0; width: min(320px, calc(100vw - 28px)); padding: 10px; border: 1px solid #edf0f5; border-radius: 12px; background: #fff; box-shadow: 0 18px 40px rgba(20, 33, 59, 0.12); }
+.notification-item { width: 100%; display: block; margin: 0; padding: 10px 10px 12px; border: 0; border-bottom: 1px solid #f1f4f9; background: transparent; text-align: left; cursor: pointer; }
+.notification-item:last-child { border-bottom: 0; }
+.notification-item strong { display: block; color: #324763; font-size: 10px; }
+.notification-item small { display: block; margin: 2px 0 4px; color: #9aa7b5; font-size: 8px; }
+.notification-item span { display: block; color: #66788d; font-size: 9px; line-height: 1.5; }
+
 .topbar-queue { display: flex; align-items: center; gap: 9px; border: 0; background: transparent; color: #63718a; font-size: 10px; font-weight: 600; }
 .topbar-queue .live-dot { width: 6px; height: 6px; box-shadow: 0 0 0 3px #e6f8ee; }
 .topbar-avatar { width: 30px; height: 30px; }
@@ -303,6 +313,9 @@ td small { margin-top: 4px; color: #99a4b3; font-size: 9px; }
 .settings-form input { width: 100%; min-height: 40px; padding: 0 12px; border: 1px solid #e1e7ef; border-radius: 7px; outline: 0; color: #3c4b62; font-size: 10px; font-weight: 400; }
 .settings-form input:focus { border-color: #80a5f2; box-shadow: 0 0 0 3px #edf3ff; }
 .settings-form input:disabled { background: #f7f9fc; color: #8895a8; }
+.system-setting-row { width: 100%; display: flex; align-items: flex-end; gap: 12px; }
+.system-setting-row label { flex: 1; }
+@media (max-width: 560px) { .system-setting-row { align-items: stretch; flex-direction: column; } }
 .success-inline { width: 100%; padding: 9px 11px; border-radius: 7px; background: #edf8f1; color: #38835b; font-size: 10px; }
 .password-panel { margin-top: 16px; }
 
@@ -443,4 +456,220 @@ td small { margin-top: 4px; color: #99a4b3; font-size: 9px; }
   .app-main { margin: 0; }
   .app-content { max-width: none; padding: 0; }
   .panel { border: 0; }
+}
+
+/* Dashboard accessibility and the expanded patient/admin views */
+.app-content { font-size: 15px; }
+.app-content p, .app-content td, .app-content th, .app-content label, .app-content input, .app-content select, .app-content textarea { font-size: 14px; }
+.app-content .mini-label { font-size: 11px; }
+.app-content .panel-heading p, .app-content .page-heading p { font-size: 14px; }
+.app-content .status { min-height: 28px; padding: 5px 10px; font-size: 12px; }
+.side-link { min-height: 46px; font-size: 14px; }
+.icon-button { min-width: 44px; min-height: 44px; }
+.topbar-queue { min-height: 44px; font-size: 13px; }
+.notification-badge { min-width: 19px; height: 19px; font-size: 11px; }
+.notification-bell { width: 44px; height: 44px; }
+.side-count { min-width: 22px; height: 22px; margin-left: auto; display: grid; place-items: center; padding: 0 5px; border-radius: 20px; background: #eaf1ff; color: #2354b5; font-size: 12px; font-weight: 700; }
+.quick-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0 0 18px; }
+.quick-actions button { min-height: 54px; padding: 8px 14px; display: flex; align-items: center; justify-content: flex-start; gap: 10px; border: 1px solid #dbe4f2; border-radius: 10px; background: #fff; color: #23436f; font-size: 14px; font-weight: 700; text-align: left; }
+.quick-actions button:hover { border-color: #8eace5; background: #f6f9ff; }
+.quick-actions svg { flex: 0 0 auto; color: #2b64c8; }
+.announcement-banner { margin: 0 0 18px; padding: 16px 18px; display: flex; align-items: flex-start; gap: 14px; border: 1px solid #c8dcfb; border-left: 4px solid #2563eb; border-radius: 10px; background: #f2f7ff; }
+.announcement-banner > div { flex: 1; }
+.announcement-banner strong { color: #203957; font-size: 15px; }
+.announcement-banner p { margin: 5px 0; color: #526781; line-height: 1.55; }
+.announcement-banner small { color: #667b98; font-size: 12px; }
+.queue-patient-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0; padding: 13px; border: 1px solid #e6edf7; border-radius: 10px; background: #fff; }
+.queue-patient-summary > div { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.queue-patient-summary > div > span { color: #586982; font-size: 12px; }
+.queue-patient-summary strong { color: #263c59; font-size: 16px; overflow-wrap: anywhere; }
+.queue-card-bottom { gap: 12px; }
+.queue-card-bottom > span { font-size: 12px; }
+.queue-card-bottom button { min-height: 42px; font-size: 13px; }
+.notification-wrapper { position: relative; }
+.notification-panel { z-index: 25; max-height: min(78vh, 650px); overflow-y: auto; padding: 0; }
+.notification-panel-heading { padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #e8edf4; }
+.notification-panel-heading > strong { color: #243b58; font-size: 15px; }
+.notification-panel .notification-item { width: 100%; min-height: auto; display: flex; align-items: flex-start; gap: 10px; padding: 13px 14px; text-align: left; }
+.notification-panel .notification-item > div { flex: 1; }
+.notification-panel .notification-item strong { color: #304766; font-size: 14px; }
+.notification-panel .notification-item small { margin: 4px 0; color: #61738b; font-size: 12px; }
+.notification-panel .notification-item span:not(.notification-state) { color: #4d6078; font-size: 13px; line-height: 1.5; }
+.notification-item.is-unread { background: #f5f8ff; }
+.notification-state { width: 10px; height: 10px; margin-top: 5px; display: inline-block; flex: 0 0 auto; border: 2px solid #8b9bb0; border-radius: 50%; background: #fff; }
+.notification-item.is-unread .notification-state, .notification-row.is-unread .notification-state { border-color: #2563eb; background: #2563eb; }
+.notification-view-all { width: 100%; min-height: 48px; border: 0; border-top: 1px solid #e8edf4; background: #f8faff; color: #2458b7; font-size: 14px; font-weight: 700; }
+.notification-center { overflow: hidden; }
+.notification-filters { padding: 12px 16px; display: flex; gap: 8px; overflow-x: auto; border-bottom: 1px solid #e8edf4; }
+.notification-filters button { min-height: 42px; padding: 0 14px; flex: 0 0 auto; border: 1px solid transparent; border-radius: 8px; background: transparent; color: #52647c; font-size: 13px; font-weight: 600; }
+.notification-filters button.active { border-color: #c8d8f4; background: #edf3ff; color: #1f55b6; }
+.notification-row { padding: 18px; display: flex; align-items: flex-start; gap: 14px; border-bottom: 1px solid #edf1f6; }
+.notification-row:last-child { border-bottom: 0; }
+.notification-copy { min-width: 0; flex: 1; }
+.notification-title-row { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; }
+.notification-title-row strong { color: #253d5c; font-size: 15px; }
+.notification-category { padding: 3px 8px; border-radius: 99px; background: #edf3ff; color: #315a99; font-size: 11px; font-weight: 700; }
+.notification-read-label { color: #52657e; font-size: 11px; font-weight: 700; }
+.notification-row.is-unread .notification-read-label { color: #174b9f; }
+.notification-copy time, .activity-row time, .announcement-history time { display: block; margin-top: 5px; color: #62748b; font-size: 12px; }
+.notification-copy p { margin: 8px 0 0; color: #4d6078; line-height: 1.55; }
+.mark-read { min-height: 42px; padding: 8px; font-size: 13px; }
+.schedule-list-panel, .help-panel { overflow: hidden; }
+.schedule-list-row { padding: 17px 19px; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto; align-items: center; gap: 15px; border-top: 1px solid #edf1f6; }
+.schedule-list-row > div:first-child strong, .schedule-list-row > div:first-child span, .schedule-capacity strong, .schedule-capacity span { display: block; }
+.schedule-list-row > div:first-child strong { color: #293d59; font-size: 15px; }
+.schedule-list-row > div:first-child span, .schedule-capacity span { margin-top: 5px; color: #61738a; font-size: 13px; }
+.schedule-capacity strong { color: #2c4a74; font-size: 14px; }
+.help-panel article { padding: 20px 22px; border-bottom: 1px solid #edf1f6; }
+.help-panel article:last-child { border-bottom: 0; }
+.help-panel h2 { margin: 0 0 8px; color: #2a405e; font-size: 17px; }
+.help-panel p { margin: 0; color: #536780; line-height: 1.65; }
+.admin-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.admin-stats .stat-card { min-height: 130px; padding: 18px; }
+.admin-stats .stat-card > span { min-height: 38px; color: #52647a; font-size: 13px; line-height: 1.4; }
+.admin-stats .stat-card > strong { color: #253956; font-size: 27px; }
+.admin-overview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 16px 0; }
+.admin-overview-grid > .panel { min-width: 0; }
+.live-queue-panel, .capacity-panel, .analytics-panel, .attention-panel, .overview-appointments, .overview-activity { overflow: hidden; }
+.live-queue-numbers { padding: 0 18px 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.live-queue-numbers > div, .capacity-totals > div { min-width: 0; }
+.live-queue-numbers span, .capacity-totals span { display: block; color: #5f7087; font-size: 12px; }
+.live-queue-numbers strong { display: block; margin-top: 5px; color: #213d64; font-size: 25px; }
+.queue-status-note { margin: 0 18px 12px; padding: 10px 12px; border-radius: 8px; background: #f2f7ff; color: #435b7a; line-height: 1.5; }
+.admin-queue-actions { padding: 0 18px 18px; }
+.capacity-totals { padding: 0 18px 17px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.capacity-totals strong { display: block; margin-top: 4px; color: #293d59; font-size: 20px; }
+.capacity-list { padding: 0 18px 14px; }
+.capacity-row { min-height: 47px; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; border-top: 1px solid #edf1f6; color: #4b5f79; font-size: 12px; }
+.capacity-row > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.capacity-row > strong { color: #334a68; font-size: 13px; }
+.analytics-bars, .attention-list { padding: 0 18px 18px; }
+.analytics-row { min-height: 43px; display: grid; grid-template-columns: 110px minmax(0, 1fr) 38px; align-items: center; gap: 12px; border-bottom: 1px solid #edf1f6; color: #4e6179; font-size: 13px; }
+.analytics-row strong { color: #2c405c; text-align: right; font-size: 13px; }
+.analytics-track { height: 10px; overflow: hidden; border-radius: 9px; background: #eaf0f8; }
+.analytics-track span { height: 100%; display: block; border-radius: inherit; background: #3472dd; }
+.analytics-row:nth-child(2) .analytics-track span { background: #289a72; }
+.analytics-row:nth-child(3) .analytics-track span { background: #bd6c50; }
+.analytics-row:nth-child(4) .analytics-track span { background: #557bb8; }
+.analytics-row:nth-child(5) .analytics-track span { background: #7b879a; }
+.attention-count { min-width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: #eef2f7; color: #4d607a; font-size: 14px; font-weight: 700; }
+.attention-count.has-alerts { background: #fff2e6; color: #98520d; }
+.attention-list { margin: 0; list-style: none; }
+.attention-list li { min-height: 45px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid #edf1f6; color: #4a5f78; font-size: 13px; }
+.attention-list .text-button { min-height: 40px; flex: 0 0 auto; font-size: 13px; }
+.overview-appointments, .overview-activity { margin-bottom: 16px; }
+.activity-list { padding: 0 18px 12px; }
+.activity-row { padding: 13px 0; display: flex; align-items: flex-start; gap: 12px; border-bottom: 1px solid #edf1f6; }
+.activity-row:last-child { border-bottom: 0; }
+.activity-marker { width: 30px; height: 30px; display: grid; flex: 0 0 auto; place-items: center; border-radius: 50%; background: #edf5f0; color: #38845c; }
+.activity-row strong { color: #344a67; font-size: 14px; text-transform: capitalize; }
+.activity-row p { margin: 4px 0 0; color: #546981; font-size: 13px; }
+.announcement-form { max-width: 760px; padding: 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 15px; }
+.announcement-form label { width: 100%; display: flex; flex-direction: column; gap: 7px; color: #344b68; font-weight: 600; }
+.announcement-form input, .announcement-form textarea { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid #d5deeb; border-radius: 8px; background: #fff; color: #263c59; }
+.announcement-form textarea { resize: vertical; line-height: 1.55; }
+.announcement-history { padding: 0 20px 20px; }
+.announcement-history h3 { color: #344b68; font-size: 16px; }
+.announcement-history article { padding: 14px 0; border-top: 1px solid #edf1f6; }
+.announcement-history article strong { color: #344b68; font-size: 15px; }
+.announcement-history article p { margin: 7px 0 0; color: #536780; line-height: 1.55; }
+.admin-queue-summary { padding: 0 18px 17px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.admin-queue-summary > div { padding: 12px; border-radius: 9px; background: #f5f8fd; }
+.admin-queue-summary strong { display: block; margin-top: 6px; color: #293f60; font-size: 22px; }
+.schedule-available-toggle { min-height: 44px; display: flex; align-items: center; gap: 9px; color: #405671; font-size: 13px; }
+.schedule-available-toggle input { width: 18px; height: 18px; accent-color: #2563eb; }
+.schedule-admin-list { padding: 0 18px 18px; }
+.schedule-admin-list .schedule-row { min-height: 64px; flex-wrap: wrap; font-size: 13px; }
+.schedule-admin-list .schedule-row .button { flex: 0 0 auto; }
+.report-bars { max-width: 800px; }
+.appointment-calendar-panel { margin: 0 0 16px; overflow: hidden; }
+.calendar-heading { align-items: flex-start; flex-wrap: wrap; }
+.calendar-heading h2 { font-size: 17px; }
+.calendar-month-controls { display: flex; align-items: center; gap: 10px; }
+.calendar-month-controls .button { min-width: 44px; min-height: 44px; padding: 0 10px; font-size: 20px; }
+.calendar-month-controls strong { min-width: 145px; color: #2c405c; font-size: 15px; text-align: center; }
+.appointment-calendar-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(245px, .8fr); }
+.calendar-month-grid { min-width: 0; padding: 16px; }
+.calendar-weekdays, .calendar-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.calendar-weekdays { margin-bottom: 7px; }
+.calendar-weekdays span { min-height: 34px; display: grid; place-items: center; color: #5a6c83; font-size: 12px; font-weight: 700; }
+.calendar-day { min-width: 0; min-height: 58px; padding: 5px 3px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 1px solid #e2e9f2; border-radius: 8px; background: #fff; color: #314966; }
+.calendar-day:not(:disabled):hover { border-color: #80a2dd; background: #f5f8ff; }
+.calendar-day-empty { border-color: transparent; background: transparent; }
+.calendar-day-number { font-size: 14px; font-weight: 700; line-height: 1.1; }
+.calendar-day-today { border: 2px solid #4778ce; }
+.calendar-day-selected { border-color: #2458b7; background: #2458b7; color: #fff; }
+.calendar-day-selected:not(:disabled):hover { background: #1d4eaa; }
+.calendar-day-count { min-width: 18px; padding: 1px 4px; border-radius: 20px; background: #e7efff; color: #204e9b; font-size: 10px; font-weight: 700; line-height: 1.25; }
+.calendar-day-selected .calendar-day-count { background: #fff; color: #174b9f; }
+.calendar-selected-day { min-width: 0; padding: 18px; border-left: 1px solid #e8edf4; background: #fbfcfe; }
+.calendar-selected-day h3 { margin: 0 0 12px; color: #2a405e; font-size: 15px; }
+.calendar-selected-day > p { margin: 0; color: #5d6f86; font-size: 14px; line-height: 1.55; }
+.calendar-selected-day ul { margin: 0; padding: 0; list-style: none; }
+.calendar-selected-day li { padding: 12px 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 9px; border-top: 1px solid #e6ebf2; }
+.calendar-selected-day li > div { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.calendar-selected-day li strong { color: #334b6b; font-size: 14px; }
+.calendar-selected-day li span:not(.status) { color: #576b83; font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
+.calendar-selected-day .status { margin-top: 1px; }
+.appointment-actions { min-width: 132px; }
+.appointment-actions .button { margin-right: 5px; }
+.appointment-detail-row td { padding: 16px 20px; background: #f6f9fe; color: #415974; line-height: 1.5; }
+.appointment-detail-row strong { color: #2a405e; }
+.appointment-detail-row p { margin: 6px 0; }
+.appointment-detail-row span { color: #5b6f87; }
+.sidebar nav { min-height: 0; overflow-y: auto; padding-bottom: 12px; }
+.sidebar-label { font-size: 11px; }
+.sidebar-help > strong { font-size: 13px; }
+.sidebar-help p, .sidebar-help button { min-height: 40px; font-size: 12px; }
+.profile-name strong { font-size: 13px; }
+.profile-name small { font-size: 11px; }
+.app-content .stat-card > span { font-size: 13px; }
+.app-content .stat-card > small { color: #596b82; font-size: 12px; }
+.app-content .appointment-info > strong { font-size: 14px; }
+.app-content .appointment-info > span { color: #596b82; font-size: 13px; line-height: 1.45; }
+.row-actions .approve-button, .row-actions .cancel-button, .cancel-button, .approve-button { min-height: 40px; padding: 8px 12px; font-size: 12px; }
+.app-content .text-button { min-height: 40px; font-size: 13px; }
+.schedule-available-toggle input { min-height: 18px !important; height: 18px; }
+.notification-item .text-button { min-height: 40px; }
+
+@media (max-width: 900px) {
+  .admin-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-overview-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .appointment-calendar-layout { grid-template-columns: 1fr; }
+  .calendar-selected-day { border-top: 1px solid #e8edf4; border-left: 0; }
+}
+@media (max-width: 600px) {
+  .app-content p, .app-content td, .app-content th, .app-content label, .app-content input, .app-content select, .app-content textarea { font-size: 14px; }
+  .quick-actions { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .quick-actions button { min-height: 58px; padding: 8px 10px; font-size: 13px; }
+  .announcement-banner { flex-wrap: wrap; padding: 14px; }
+  .announcement-banner .text-button { margin-left: 46px; }
+  .queue-patient-summary { grid-template-columns: 1fr 1fr; }
+  .schedule-list-row { grid-template-columns: 1fr auto; gap: 10px; }
+  .schedule-capacity { grid-column: 1; }
+  .schedule-list-row > .status { grid-column: 2; grid-row: 1 / span 2; }
+  .notification-row { padding: 15px 12px; gap: 9px; flex-wrap: wrap; }
+  .notification-copy { flex-basis: calc(100% - 24px); }
+  .notification-row .mark-read { margin-left: 24px; }
+  .admin-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-stats .stat-card { min-height: 115px; padding: 13px; }
+  .live-queue-numbers, .capacity-totals, .admin-queue-summary { gap: 7px; }
+  .live-queue-numbers strong { font-size: 21px; }
+  .capacity-row { grid-template-columns: minmax(0, 1fr) auto; padding: 6px 0; }
+  .capacity-row .status { grid-column: 2; }
+  .analytics-row { grid-template-columns: 86px minmax(0, 1fr) 28px; gap: 7px; font-size: 12px; }
+  .schedule-admin-list { padding-right: 10px; padding-left: 10px; }
+  .schedule-admin-list .schedule-row { justify-content: flex-start; }
+  .notification-panel { position: fixed; top: 62px; right: 10px; width: min(420px, calc(100vw - 20px)); max-height: calc(100vh - 76px); }
+  .sidebar-help { display: none; }
+  .calendar-month-grid { padding: 12px; }
+  .calendar-weekdays, .calendar-days { gap: 4px; }
+  .calendar-weekdays span { min-height: 30px; font-size: 11px; }
+  .calendar-day { min-height: 44px; padding: 3px 1px; border-radius: 7px; }
+  .calendar-day-number { font-size: 13px; }
+  .calendar-day-count { min-width: 16px; font-size: 9px; }
+  .calendar-month-controls { width: 100%; justify-content: space-between; }
 }
